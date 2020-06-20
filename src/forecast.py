@@ -2,6 +2,7 @@ import datetime
 import requests
 import re
 import sys
+import csv
 from bs4 import BeautifulSoup as BS
 
 class TideChecker(object):
@@ -11,7 +12,7 @@ class TideChecker(object):
 
         def checkPage(self):
                 try:
-                        self.response = requests.get('https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest/six_day')
+                        self.response = requests.get('https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest')
                         #https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest
                         #https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest/six_day
                         if self.response.status_code:
@@ -44,7 +45,7 @@ class TideChecker(object):
                 soup = BS(pageText, "lxml")
 
 
-                verbose = False
+                verbose = True
 
                 period = []
                 energy = []
@@ -55,6 +56,7 @@ class TideChecker(object):
                 high_tide = []
                 low_tide = []
                 dates = []
+                time = ['Manhã', 'Tarde', 'Noite']
 
 
                 # TODO: Ver se tem como enviar uma mensagem tao longa pelo telegram, caso nao, gerar imagem a partir de tabela?
@@ -131,7 +133,8 @@ class TideChecker(object):
 
                 # Date
                 date = datetime.datetime.today()
-                for i in range(6):
+                rangeOfDays = 2
+                for i in range(rangeOfDays):
                         # Adds 
                         if i == 0:
                                 dates.append(date.strftime("%b-%d"))
@@ -174,26 +177,13 @@ class TideChecker(object):
                         print("Tamanho: ", len(high_tide))
                         print("\nMare baixa: ", low_tide)
                         print("Tamanho: ", len(low_tide))
+                        print("\nDatas: ", dates)
+                        print("Tamanho: ", len(dates))
 
 
-
-                return period, energy, wave_height, wind_speed, wind_direction
-
-
-        def processData(self, period, energy, wave_height, wind_speed, wind_direction, dates):
-                """ All the data retrieved is gonna be treated now to be sent to Telegram
-                Send as text? Generate table using Pandas but then converting to csv style?
-                """
-                # Put this function 
-                # Create CSV file
-
-                # Using pandas, try to create a table from this csv and then generate image/text?
-                pass
-
-                
-
+                return period, energy, wave_height, wind_speed, wind_direction, dates, time
                 
 
 # For debugging purposes without using Telegram's Bot
-td = TideChecker()
-td.checkContent()
+#td = TideChecker()
+#td.checkContent()
