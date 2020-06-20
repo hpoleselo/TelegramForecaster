@@ -2,7 +2,6 @@ import datetime
 import requests
 import re
 import sys
-import csv
 from bs4 import BeautifulSoup as BS
 
 class TideChecker(object):
@@ -13,8 +12,6 @@ class TideChecker(object):
         def checkPage(self):
                 try:
                         self.response = requests.get('https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest')
-                        #https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest
-                        #https://pt.surf-forecast.com/breaks/Vilas/forecasts/latest/six_day
                         if self.response.status_code:
                                 if self.response.status_code == 200:
                                         # Standard of this page will be utf-8 because it has special characters
@@ -44,9 +41,7 @@ class TideChecker(object):
         def getContent(self, pageText):
                 soup = BS(pageText, "lxml")
 
-
                 verbose = True
-
                 period = []
                 energy = []
                 wave_height = []
@@ -56,11 +51,11 @@ class TideChecker(object):
                 high_tide = []
                 low_tide = []
                 dates = []
-                time = ['Manhã', 'Tarde', 'Noite']
+                time = []
 
 
+                # TODO: Checar o porquê o tamanho de time eh 46 e nao 23, ele ta dando parsing 2x?
                 # TODO: Ver se tem como enviar uma mensagem tao longa pelo telegram, caso nao, gerar imagem a partir de tabela?
-                # Criar um CSV e a partir do CSV plotar uma tabela? usar pandas mesmo pelo visto
                 # TODO: Arrumar a direcao das ondas
                 # TODO usar dictionary pro wind e wind direction
                 # TODO: Check wind speed, i don't think they are right
@@ -68,8 +63,6 @@ class TideChecker(object):
                 # TODO: VER QUAL SWELL PEGAR, há 3 swells possiveis e ele ta confundindo na hora de pegar o swell!!!!
                 # TODO: Pegar rating e escalar o melhor dia da semana como um resultado do boletim! Para isso precisariamos criar tipo uma tabela nossa
                 # TODO: Onde essa tabela tem as datas e escolheriamos o indice da tabela usando pandas?
-
-
 
 
                 # find_all retorna um iteravel, por isso precisamos passar por um for
@@ -130,7 +123,6 @@ class TideChecker(object):
                         for waveHeight in waveHeights:
                                 wave_height.append(waveHeight.text)
 
-
                 # Date
                 date = datetime.datetime.today()
                 rangeOfDays = 2
@@ -140,6 +132,17 @@ class TideChecker(object):
                                 dates.append(date.strftime("%b-%d"))
                         date += datetime.timedelta(days=1)
                         dates.append(date.strftime("%b-%d")) 
+
+                # Time
+                forecastTableRows = soup.find_all("tr", {"data-row-name":"time"})
+                for tableRow in forecastTableRows:
+                        tableCells = tableRow.find_all('td', class_='forecast-table-time__cell')
+                        for cell in tableCells:
+                                timeOfTheDay = cell.text
+                                # One of the characters wasn't in Unicode, so either we had to eliminate the Unicode part (which in my case was useless)
+                                # Or we convert it to utf-8
+                                timeOfTheDayConv = (timeOfTheDay.encode('ascii', 'ignore')).decode("utf-8")
+                                time.append(timeOfTheDayConv)
 
 
                 """
@@ -157,6 +160,8 @@ class TideChecker(object):
 
                 # When we parse the wind direction we get 'Vento' and 'km/h' as values, so we slice them out from the list!
                 wind_direction = wind_direction[2:]
+                # Was getting 46 for the length (somehow it is parsing twice? Check later.)
+                time = time[:23]
 
                 
                 if verbose:
@@ -179,9 +184,10 @@ class TideChecker(object):
                         print("Tamanho: ", len(low_tide))
                         print("\nDatas: ", dates)
                         print("Tamanho: ", len(dates))
+                        print("\nHorários: ", time)
+                        print("Tamanho: ", len(time))
 
-
-                return period, energy, wave_height, wind_speed, wind_direction, dates, time
+                return period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time
                 
 
 # For debugging purposes without using Telegram's Bot
