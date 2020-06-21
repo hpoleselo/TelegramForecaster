@@ -123,15 +123,6 @@ class TideChecker(object):
                         for waveHeight in waveHeights:
                                 wave_height.append(waveHeight.text)
 
-                # Date
-                date = datetime.datetime.today()
-                rangeOfDays = 2
-                for i in range(rangeOfDays):
-                        # Adds 
-                        if i == 0:
-                                dates.append(date.strftime("%b-%d"))
-                        date += datetime.timedelta(days=1)
-                        dates.append(date.strftime("%b-%d")) 
 
                 # Time
                 forecastTableRows = soup.find_all("tr", {"data-row-name":"time"})
@@ -144,25 +135,47 @@ class TideChecker(object):
                                 timeOfTheDayConv = (timeOfTheDay.encode('ascii', 'ignore')).decode("utf-8")
                                 time.append(timeOfTheDayConv)
 
-
-                """
-                # Week days by using html parsing
+                
+                # Date/Days of the week
                 forecastTableRows = soup.find_all("tr", {"data-row-name":"days"})
                 for tableRow in forecastTableRows:
-                        # We have to extract in this case the VALUE of the attribute data-day-name
-                        swellDirections = tableRow.find_all('forecast-table-days__cell')
-                        #print(swellDirections)
-                        for swellDirection in swellDirections:
-                                #print(swellDirection)
-                                repElemName = swellDirection.get('name')
-                                #print(repElemName)
+                        tableCells = tableRow.find_all("div", {"class":'forecast-table__value'})
+                        for cell in tableCells:
+                                dates.append(cell.text)
+
+                
                 """
+                # Date
+                date = datetime.datetime.today()
+                rangeOfDays = 2
+                for i in range(rangeOfDays):
+                        # Adds 
+                        if i == 0:
+                                dates.append(date.strftime("%b-%d"))
+                        date += datetime.timedelta(days=1)
+                        dates.append(date.strftime("%b-%d")) 
+                """
+
+                
+                # ! Data Treatment !
 
                 # When we parse the wind direction we get 'Vento' and 'km/h' as values, so we slice them out from the list!
                 wind_direction = wind_direction[2:]
+
                 # Was getting 46 for the length (somehow it is parsing twice? Check later.)
                 time = time[:23]
 
+                # Days were being repeated
+                dates_temp = dates[:12]
+                # Cleanup the list
+                dates = []
+                remainder = 0
+                # Get values Sabado20, Domingo21... (Divisible by 3 including the first one (0))
+                for i in range(len(dates_temp)):
+                        if i == 0:
+                                dates.append(dates_temp[i])
+                        elif remainder == (i%3):
+                                dates.append(dates_temp[i])
                 
                 if verbose:
                         print("## Resultados ##\n")
@@ -186,7 +199,7 @@ class TideChecker(object):
                         print("Tamanho: ", len(dates))
                         print("\nHorários: ", time)
                         print("Tamanho: ", len(time))
-
+                
                 return period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time
                 
 
