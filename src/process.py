@@ -7,11 +7,11 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
     Send as text? Generate table using Pandas but then converting to csv style?
     """
 
-    initialColumns = checaDeslocamento(time)
+    initialColumns = checkDisplacement(time)
 
     # Creating our pandas dataframe
     forecastTable = {}
-    rowsIndex = ['Horário','Período da Ondulação:','Velocidade do Vento:','Direção do Vento:', 'Tamanho da Ondulação:','Direção da Ondulação:', 'Energia da Ondulação:']
+    rowsIndex = ['Horário:','Período da Ondulação:','Velocidade do Vento:','Direção do Vento:', 'Tamanho da Ondulação:','Direção da Ondulação:', 'Energia da Ondulação:']
     columns = []
     counter = 0
     # 8 is the number of subdivisions in a day
@@ -21,9 +21,9 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
     # Colocar len
     for i in range(23):
         counter+=1
+
         if counter <= initialColumns:
             columns.append(dates[0])
-            # colocar horário times
         elif counter <= secondThreshold:
             columns.append(dates[1])
         elif counter <= thirdThreshold:
@@ -33,7 +33,16 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
 
 
     df = pd.DataFrame(forecastTable, columns=columns, index=rowsIndex)
+    df.loc['Horário:'] = time
+    df.loc['Período da Ondulação:'] = period
+    df.loc['Velocidade do Vento:'] = wind_speed
+    df.loc['Direção do Vento:'] = wind_direction
+    df.loc['Tamanho da Ondulação:'] = wave_height
+    df.loc['Direção da Ondulação:'] = wave_direction
+    df.loc['Energia da Ondulação:'] = energy
+    
     print(df)
+    return df
     # pegar max.energy() p/ avaliar melhor dia com min.wind()
     # Using pandas, try to create a table from this csv and then generate image/text?
 
@@ -43,7 +52,7 @@ def generateImage(df):
     #return image
 
 
-def checaDeslocamento(time):
+def checkDisplacement(time):
     """ Since the day the we're looking isn't going to display the full day (all the eight times), then we have to know before how many
     days we're going to plot since it's not 8. We do that by checking the transition between PM -> AM (when it's the transition between days) 
     
@@ -54,7 +63,7 @@ def checaDeslocamento(time):
     generalCounter = 0
     initialTime = time[0]
     initialState = initialTime[-2:]
-    print(time)
+    #print(time)
     for i in range(len(time)):
         generalCounter += 1
         currentTime = time[i]
