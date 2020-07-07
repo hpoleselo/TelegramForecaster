@@ -11,20 +11,19 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
 
     # Creating our pandas dataframe
     forecastTable = {}
+    rowsIndex = ['Horário','Período da Ondulação:','Velocidade do Vento:','Direção do Vento:', 'Tamanho da Ondulação:','Direção da Ondulação:', 'Energia da Ondulação:']
     columns = []
     counter = 0
     # 8 is the number of subdivisions in a day
     secondThreshold = initialColumns + 8
     thirdThreshold = secondThreshold + 8
-    #fourthThreshold = 
-
-    index = ['Horário','Período da Ondulação:','Velocidade do Vento:','Direção do Vento:', 'Tamanho da Ondulação:','Direção da Ondulação:', 'Energia da Ondulação:']
     
     # Colocar len
     for i in range(23):
         counter+=1
         if counter <= initialColumns:
-            columns.append(dates[0])   
+            columns.append(dates[0])
+            # colocar horário times
         elif counter <= secondThreshold:
             columns.append(dates[1])
         elif counter <= thirdThreshold:
@@ -33,7 +32,7 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
             columns.append(dates[3])
 
 
-    df = pd.DataFrame(forecastTable, columns=columns, index=index)
+    df = pd.DataFrame(forecastTable, columns=columns, index=rowsIndex)
     print(df)
     # pegar max.energy() p/ avaliar melhor dia com min.wind()
     # Using pandas, try to create a table from this csv and then generate image/text?
@@ -55,6 +54,7 @@ def checaDeslocamento(time):
     generalCounter = 0
     initialTime = time[0]
     initialState = initialTime[-2:]
+    print(time)
     for i in range(len(time)):
         generalCounter += 1
         currentTime = time[i]
@@ -65,28 +65,23 @@ def checaDeslocamento(time):
         if currentState == "AM":
             amCounter += 1
 
+        # To check if there's been transition, whether is AM->PM or PM->AM
         if not (currentState == initialState):
-            print("Geral: Houve transição de horário!")
+            print("General: There was a transition!")
             if (initialState == "PM"):
-                print("\nCaso o estado seja PM:")
-                print("Fez a transicao de dias!")
-                print("Plotar: ", generalCounter-1)
+                print("\nThe initial stage was PM:")
+                print("There was a transition between days!")
+                # Since we detect the transition after n+1 iterations, we have to decrease by 1
+                displacement = generalCounter - 1
+                print("How many times to plot PM: ", displacement)
+                return displacement
             else:
-                print("\nCaso o estado seja AM:")
+                print("\nThe initial stage was AM:")
                 print("Não houve transição de dias")
-                print("Plotar horarios pela manhã: ", amCounter)
-                print("Plotar horarios PM: 4")
-            break
-
-    # Since we detect the transition after n+1 iterations, we have to decrease by 1
-    displacement = generalCounter - 1
-
-    """
-    if (pmCounter < amCounter):
-        print("Quer dizer que a transicao foi ..")
-    """
-
-    return displacement
+                print("How many times to plot AM: ", amCounter)
+                # Since everytime we come to transition AM->PM and the PM ALWAYS appears 4x times on a day when preeceded by AM, then the number is fixed: 4.
+                displacement = amCounter + 4
+                return displacement
 
 def main():
     response = forecast.checkPage()
