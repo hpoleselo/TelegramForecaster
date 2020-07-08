@@ -1,5 +1,8 @@
 import pandas as pd
 import forecast
+import weasyprint as wsp
+import PIL as pil
+
 
 
 def processData(period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time):
@@ -11,7 +14,7 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
 
     # Creating our pandas dataframe
     forecastTable = {}
-    rowsIndex = ['Horário:','Período da Ondulação:','Velocidade do Vento:','Direção do Vento:', 'Tamanho da Ondulação:','Direção da Ondulação:', 'Energia da Ondulação:']
+    rowsIndex = ['Horário','Período da Ondulação (s)','Velocidade do Vento (km/h)','Direção do Vento', 'Tamanho da Ondulação (m)','Direção da Ondulação', 'Máxima Energia da Ondulação (kJ)']
     columns = []
     counter = 0
     # 8 is the number of subdivisions in a day
@@ -33,23 +36,41 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
 
 
     df = pd.DataFrame(forecastTable, columns=columns, index=rowsIndex)
-    df.loc['Horário:'] = time
-    df.loc['Período da Ondulação:'] = period
-    df.loc['Velocidade do Vento:'] = wind_speed
-    df.loc['Direção do Vento:'] = wind_direction
-    df.loc['Tamanho da Ondulação:'] = wave_height
-    df.loc['Direção da Ondulação:'] = wave_direction
-    df.loc['Energia da Ondulação:'] = energy
-    
-    print(df)
-    return df
+    df.loc['Horário'] = time
+    df.loc['Período da Ondulação (s)'] = period
+    df.loc['Velocidade do Vento (km/h)'] = wind_speed
+    df.loc['Direção do Vento'] = wind_direction
+    df.loc['Tamanho da Ondulação (m)'] = wave_height
+    df.loc['Direção da Ondulação'] = wave_direction
+    df.loc['Máxima Energia da Ondulação (kJ)'] = energy
     # pegar max.energy() p/ avaliar melhor dia com min.wind()
-    # Using pandas, try to create a table from this csv and then generate image/text?
+    return df
+
+def trim(source_filepath, target_filepath=None, background=None):
+    """ Source code from norek: https://stackoverflow.com/questions/35634238/how-to-save-a-pandas-dataframe-table-as-a-png """
+    if not target_filepath:
+        target_filepath = source_filepath
+    img = pil.Image.open(source_filepath)
+    if background is None:
+        background = img.getpixel((0, 0))
+    border = pil.Image.new(img.mode, img.size, background)
+    diff = pil.ImageChops.difference(img, border)
+    bbox = diff.getbbox()
+    img = img.crop(bbox) if bbox else img
+    img.save(target_filepath)
 
 
 def generateImage(df):
-    pass
-    #return image
+    """ Takes a dataframe and generates an image using weasyprint (dataframe to html) """
+    img_filepath = 'table.png'
+    css = wsp.CSS(string='''
+    @page { size: 2048px 2048px; padding: 0px; margin: 0px; }
+    table, td, tr, th { border: 1px solid black; }
+    td, th { padding: 4px 8px; }
+    ''')
+    html = wsp.HTML(string=df.to_html())
+    html.write_png(img_filepath, stylesheets=[css])
+    trim(img_filepath)
 
 
 def checkDisplacement(time):
@@ -96,7 +117,8 @@ def main():
     response = forecast.checkPage()
     pageText = forecast.checkContent(response)
     period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time = forecast.getContent(pageText)
-    processData(period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time)
+    df = processData(period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time)
+    generateImage(df)
 
 
 if __name__ == "__main__":
