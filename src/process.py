@@ -4,7 +4,6 @@ import weasyprint as wsp
 import PIL as pil
 
 
-
 def processData(period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time):
     """ All the data retrieved is gonna be treated now to be sent to Telegram
     Send as text? Generate table using Pandas but then converting to csv style?
@@ -24,7 +23,6 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
     # Colocar len
     for i in range(23):
         counter+=1
-
         if counter <= initialColumns:
             columns.append(dates[0])
         elif counter <= secondThreshold:
@@ -45,6 +43,7 @@ def processData(period, wind_speed, wind_direction, wave_height, wave_direction,
     df.loc['Máxima Energia da Ondulação (kJ)'] = energy
     # pegar max.energy() p/ avaliar melhor dia com min.wind()
     return df
+
 
 def trim(source_filepath, target_filepath=None, background=None):
     """ Source code from norek: https://stackoverflow.com/questions/35634238/how-to-save-a-pandas-dataframe-table-as-a-png """
@@ -97,29 +96,27 @@ def checkDisplacement(time):
 
         # To check if there's been transition, whether is AM->PM or PM->AM
         if not (currentState == initialState):
-            print("General: There was a transition!")
+            #print("General: There was a transition!")
             if (initialState == "PM"):
-                print("\nThe initial stage was PM:")
-                print("There was a transition between days!")
+                #print("\nThe initial stage was PM:")
+                #print("There was a transition between days!")
                 # Since we detect the transition after n+1 iterations, we have to decrease by 1
                 displacement = generalCounter - 1
-                print("How many times to plot PM: ", displacement)
+                #print("How many times to plot PM: ", displacement)
                 return displacement
             else:
-                print("\nThe initial stage was AM:")
-                print("Não houve transição de dias")
-                print("How many times to plot AM: ", amCounter)
+                #print("\nThe initial stage was AM:")
+                #print("Não houve transição de dias")
+                #print("How many times to plot AM: ", amCounter)
                 # Since everytime we come to transition AM->PM and the PM ALWAYS appears 4x times on a day when preeceded by AM, then the number is fixed: 4.
                 displacement = amCounter + 4
                 return displacement
 
-def main():
+
+def generate_image():
+    """ Generates a png image from the data retrieved from the web scrapping. This should be sent then to the user in the Telegram API. """
     response = forecast.checkPage()
     pageText = forecast.checkContent(response)
     period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time = forecast.getContent(pageText)
     df = processData(period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time)
     generateImage(df)
-
-
-if __name__ == "__main__":
-        main()
