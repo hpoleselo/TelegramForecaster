@@ -42,7 +42,7 @@ def checkContent(response):
 def getContent(pageText):
 	soup = BS(pageText, "lxml")
 
-	verbose = False
+	verbose = True
 	period = []
 	energy = []
 	wave_height = []
@@ -56,14 +56,9 @@ def getContent(pageText):
 
 
 	# TODO: Checar o porquê o tamanho de time eh 46 e nao 23, ele ta dando parsing 2x?
-	# TODO: Ver se tem como enviar uma mensagem tao longa pelo telegram, caso nao, gerar imagem a partir de tabela?
-	# TODO: Arrumar a direcao das ondas
 	# TODO usar dictionary pro wind e wind direction
-	# TODO: Check wind speed, i don't think they are right
-	# TODO: see how we separate the data retrieved (regarding the height AND sometimes we get 3 or 4 high and low tides..)
 	# TODO: VER QUAL SWELL PEGAR, há 3 swells possiveis e ele ta confundindo na hora de pegar o swell!!!!
 	# TODO: Pegar rating e escalar o melhor dia da semana como um resultado do boletim! Para isso precisariamos criar tipo uma tabela nossa
-	# TODO: Onde essa tabela tem as datas e escolheriamos o indice da tabela usando pandas?
 
 
 	# find_all retorna um iteravel, por isso precisamos passar por um for
@@ -200,14 +195,15 @@ def getContent(pageText):
 		print("Tamanho: ", len(dates))
 		print("\nHorários: ", time)
 		print("Tamanho: ", len(time))
-	return period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time
+    # Use dictionary to return since there're too many values?
+	return period, wind_speed, wind_direction, wave_height, wave_direction, energy, dates, time, high_tide, low_tide
 		
 
 """
 def main():
 	response = checkPage()
 	pageText = checkContent(response)
-	a,b,c,d,e,f,g,h = getContent(pageText)
-	print(a, b,c,d,e,f,g,h)
+	a,b,c,d,e,f,g,h,j,k = getContent(pageText)
+	#print(a, b,c,d,e,f,g,h,j,k)
 main()
 """
