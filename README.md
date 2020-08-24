@@ -18,13 +18,15 @@ In order to run the application, just access the ``` src ``` folder and:
 
 ``` $ python3 telegramInterface.py ```
 
-## Automate using cron
+## Automate using anacron
 
-Instead of having a server to run our script, one possible solution is to use ``` cron ``` to run our Python script periodically. I decided to run it once a day. If you want to do it yourself, create an executable shell script but **without** the ``` .sh ``` extension, otherwise cron won't run your script, there's an example located on this repository (without underline, dashes etc, otherwise cron won't run it as well) called ``` runforecaster.sh ```.
+Instead of having a server to run our script, one possible solution is to use ``` anacron ``` to run our Python script periodically. I decided to run it once a day. If you want to do it yourself, create an executable shell script but **without** the ``` .sh ``` extension, otherwise cron won't run your script, there's an example located on this repository (without underline, dashes etc, otherwise cron won't run it as well) called ``` runforecaster.sh ```.
 
 1. Make sure to remove the ``` .sh ``` extension from the file
-2. If you wish to run it daily, then ``` sudo cp runforecaster /etc/cron.daily ```
-3. To debug and check if it's running properly: ``` sudo run-parts /etc/cron.daily ``` if anything goes wrong it will output on the same terminal.
+2. If you wish to run it daily, then ``` $ sudo cp runforecaster /etc/cron.daily ```
+3. To debug and check if it's running properly: ``` $ sudo run-parts /etc/cron.daily ``` if anything goes wrong it will output on the same terminal.
+4. To check the log from anacron ``` $ grep anacron /var/log/syslog ```
+5. To check when anacron will run your daily scripts ``` $ grep run-parts /etc/crontab ```
 
 ## Improvements
 - [ ] Add tide high and low times column
