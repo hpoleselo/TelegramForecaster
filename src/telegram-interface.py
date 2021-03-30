@@ -26,7 +26,7 @@ def send_message(token, chat_id, high_tide, low_tide):
     #\n\nPróxima maré baixa:"
     bot.send_message(chat_id=chat_id, text=msg)
     bot.send_message(chat_id=chat_id, text=tides_msg)
-    #bot.send_photo(chat_id=chat_id, photo=open('table.png', 'rb'))
+    bot.send_photo(chat_id=chat_id, photo=open('table.png', 'rb'))
 
 
 def main():
@@ -39,7 +39,7 @@ def main():
     updater = Updater(token=token, use_context=True)
     chat_id = "@previsaoVilas"
     print("[INFO]: Running bot...")
-    send_message(token, chat_id, high_tide, low_tide)
+    #send_message(token, chat_id, high_tide, low_tide)
     print("[INFO]: Message sent, exiting.")
 
 
